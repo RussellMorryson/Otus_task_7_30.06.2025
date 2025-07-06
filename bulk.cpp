@@ -13,9 +13,13 @@ public:
 
     void process_command(const std::string& command) {
         if (command == "{") {
+            dynamic_bulk_size +=1;
             start_dynamic_block();
         } else if (command == "}") {
-            end_dynamic_block();
+            dynamic_bulk_size -=1;
+            if (dynamic_bulk_size == 0) {
+                end_dynamic_block();
+            }
         } else {
             commands_.push_back(command);
             if (!in_dynamic_block_ && commands_.size() == bulk_size_) {
@@ -73,6 +77,7 @@ private:
     }
 
 private:
+    size_t dynamic_bulk_size = 0;
     size_t bulk_size_;
     bool in_dynamic_block_;
     std::vector<std::string> commands_;
@@ -99,6 +104,9 @@ int main(int argc, char* argv[]) {
     std::string command;
 
     while (std::getline(std::cin, command)) {
+        if (command == "EOF" || command == "exit") {
+            break;
+        }
         logger.process_command(command);
     }
 
